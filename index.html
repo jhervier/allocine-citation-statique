@@ -157,7 +157,7 @@ button:disabled{opacity:.4;cursor:not-allowed;filter:none}
         <label for="quote">Citation</label>
         <textarea id="quote" autocomplete="off" spellcheck="false">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</textarea>
       </div>
-      <p class="note" id="textNote">Le texte passe à la ligne tout seul, 5 lignes maximum, aligné sur le bas. Entrée force un retour à la ligne. Les guillemets suivent la première ligne.</p>
+      <p class="note" id="textNote">Le texte passe à la ligne tout seul, 5 lignes maximum. Les guillemets restent en place et le nom suit la dernière ligne ; à 5 lignes, tout remonte d'une ligne. Entrée force un retour à la ligne.</p>
       <div class="field" style="margin-top:8px">
         <label for="name">Nom (le tiret est ajouté tout seul)</label>
         <input type="text" id="name" value="Adrien Brody" autocomplete="off" spellcheck="false">
@@ -317,8 +317,8 @@ HQ.onUpdate = function(){ schedule(); };   /* photo nette prête : on redessine 
 var W = 1080, H = 1440, PREFIX = 'AC_STATIQUE_CITATION_1080x1440';
 var CFG = {
   yellow: '#fecc00',
-  /* citation : Wayfinder CF italique, blanc, centrée, alignée sur le bas (dernière ligne fixe) */
-  quote: { size: 69.33, pitch: 69, cx: 540, maxW: 850, spacing: 0, thin: 0, lastBaseline: 1258, maxLines: 5, color: '#ffffff',
+  /* citation : Wayfinder CF italique, blanc, centrée, guillemets et 1re ligne fixes (PSD : haut des guillemets y 897) ; le texte descend, une 5e ligne fait tout remonter d'une ligne */
+  quote: { size: 69.33, pitch: 69, cx: 540, maxW: 850, spacing: 0, thin: 0, firstBaseline: 1051, fixedLines: 4, maxLines: 5, color: '#ffffff',
            style: 'italic', weight: 300,   /* Wayfinder CF Light Italic, comme le PSD (réglé par quoteMode) */
            stack: "'wayfinder-cf','Wayfinder CF','Playfair Display',Georgia,serif" },
   /* guillemets : image fixe, collée au-dessus de la 1re ligne */
@@ -326,8 +326,8 @@ var CFG = {
   /* ombre portée du groupe TEXTE (PSD : produit, noir, 50 %, distance 0, grossi 5 %, taille 80),
      calée sur le rendu Photoshop : flou gaussien sigma 32 px, renforcé ×3, opacité 34,5 % */
   groupShadow: { sigma: 32, gain: 3, alpha: 0.345 },
-  /* nom : Delight Bold comme le PSD, fixe, centré sur sa longueur, jaune, majuscules, précédé de « — » */
-  name:  { size: 24.7, weight: 700, cx: 543.5, baseline: 1340, tracking: 2.3, maxW: 880, prefix: '— ',
+  /* nom : Delight Bold comme le PSD, fixe, centré sur sa longueur, jaune, majuscules, précédé de « — » ; ligne de base = dernière ligne + 96 px (écart du rendu Photoshop) */
+  name:  { size: 24.7, weight: 700, cx: 543.5, gap: 96, tracking: 2.3, maxW: 880, prefix: '— ',
            stack: "'AC Delight','Barlow Semi Condensed','Arial Narrow',sans-serif" },
   /* copyright : Arial 15 px, blanc, centré, en bas */
   copy:  { size: 15.2, cx: 540, baseline: 1425, alpha: 0.30, spacing: 0.3, maxW: 1040, maxLines: 3, pitch: 18,
@@ -484,10 +484,11 @@ function drawGroup(){
   g.setTransform(1,0,0,1,0,0); g.globalCompositeOperation = 'source-over'; g.clearRect(0,0,W,H);
   g.textBaseline = 'alphabetic';
   try { g.fontKerning = 'normal'; } catch(e){}
-  /* citation : centrée, la dernière ligne reste fixe, le reste monte */
+  /* citation : centrée ; 1re ligne et guillemets fixes jusqu'à 4 lignes, à la 5e tout remonte d'une ligne */
   var L = currentLayout.lines, n = L.length;
+  var first = CFG.quote.firstBaseline - Math.max(0, n - CFG.quote.fixedLines)*CFG.quote.pitch;
+  var nameY = first + Math.max(0, n-1)*CFG.quote.pitch + CFG.name.gap;   /* le nom suit la dernière ligne */
   if (n){
-    var first = CFG.quote.lastBaseline - (n-1)*CFG.quote.pitch;
     g.textAlign = 'center'; g.font = quoteFont(); g.fillStyle = CFG.quote.color; setLS(g, CFG.quote.spacing);
     L.forEach(function(t, k){ if (t) g.fillText(t, CFG.quote.cx, first + k*CFG.quote.pitch); });
     if (CFG.quote.thin > 0){   /* secours uniquement : on ronge le contour de la Regular */
@@ -504,7 +505,7 @@ function drawGroup(){
     var full = nameFull(nm);
     g.textAlign = 'left'; g.font = nameFont(); g.fillStyle = CFG.yellow;
     var ink = nameInk(full), x = CFG.name.cx - ink.w/2 + ink.left;
-    for (var j=0;j<full.length;j++){ g.fillText(full[j], x, CFG.name.baseline); x += g.measureText(full[j]).width + CFG.name.tracking; }
+    for (var j=0;j<full.length;j++){ g.fillText(full[j], x, nameY); x += g.measureText(full[j]).width + CFG.name.tracking; }
   }
   /* ombre portée : calque réduit au 1/4, flou gaussien, renforcé, puis agrandi ; posé à l'opacité voulue */
   var S = CFG.groupShadow;
