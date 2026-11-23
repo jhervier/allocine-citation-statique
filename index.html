@@ -479,7 +479,7 @@ var W = 1080, H = 1440, PREFIX = 'AC_STATIQUE_CITATION_1080x1440';
 var CFG = {
   yellow: '#fecc00',
   /* citation : Wayfinder CF italique, blanc, centrée, guillemets et 1re ligne fixes (PSD : haut des guillemets y 897) ; le texte descend, une 5e ligne fait tout remonter d'une ligne */
-  quote: { size: 69.33, pitch: 69, cx: 540, maxW: 850, spacing: 0, thin: 0, firstBaseline: 1051, fixedLines: 4, maxLines: 5, color: '#ffffff',
+  quote: { size: 69.33, pitch: 69, cx: 540, maxW: 920, spacing: 0, thin: 0, firstBaseline: 1051, fixedLines: 4, maxLines: 5, color: '#ffffff',
            style: 'italic', weight: 300,   /* Wayfinder CF Light Italic, comme le PSD (réglé par quoteMode) */
            stack: "'wayfinder-cf','Wayfinder CF','Playfair Display',Georgia,serif" },
   /* guillemets : image fixe, collée au-dessus de la 1re ligne */
@@ -570,8 +570,8 @@ function copyWidth(t){
    le navigateur prendrait alors la Regular, plus grasse et plus large. Dans ce cas on affine la Regular
    et on resserre l'approche pour retomber sur les mêmes lignes que le PSD. */
 var QUOTE_MODES = {
-  light:    { weight: 300, spacing: 0,    maxW: 850, thin: 0 },
-  fallback: { weight: 400, spacing: -0.6, maxW: 880, thin: 0.9 }
+  light:    { weight: 300, spacing: 0,    maxW: 920, thin: 0 },   /* 920 (au lieu de 850) : lignes plus larges, environ 80 px de marge de chaque côté, comme l'exemple validé du 23/11/2026 */
+  fallback: { weight: 400, spacing: -0.6, maxW: 950, thin: 0.9 }
 };
 var quoteMode = '';
 function lightReady(){
